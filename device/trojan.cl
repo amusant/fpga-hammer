@@ -1,49 +1,69 @@
 #//--/* AUTHOR:SUMANTA CHAUHDURI */
 #include "../host/inc/defines.h"
 #define DDR_WINDOW_BASE 0x00000000
-//#define TIMER  (int *)0x40000020
-#define ACP_BASE 0x180000000
+#define TIMER  0x20
+#define ACP_BASE 0x80000000
 #define PAGE_SIZE 0x1000
 #define TOTAL_MEM 0x40000000
-//#define ADDR_SPAN_EXT_CONTROL (int *)0x40000000
+#define ADDR_SPAN_EXT_CONTROL 0x00000000
 
-
-int start_timer(unsigned int *TIMER){
+inline int start_timer(global unsigned int *test){
 	//writing to the timer register resets it
-	*(TIMER)=  0x0;
-	return *(TIMER);
+	int offset=0x40000000-(int)test;
+	test[(offset+TIMER)/4]=  0x0;
+	return test[(offset+TIMER)/4];
 }
 
 
-int stop_timer(unsigned int *TIMER){
-	return *(TIMER);
+inline int stop_timer(global unsigned int *test){
+	int offset=0x40000000-(int)test;
+	return test[(offset+TIMER)/4];
 }
-void switch_addr_space(unsigned long int *ADDR_SPAN_EXT_CONTROL,int window){
+void switch_addr_space(global unsigned int *test,int window){
+	int offset=0x40000000-(int)test;
 	if(window==0)
-		*(ADDR_SPAN_EXT_CONTROL)=0x0;
+		test[(offset+ADDR_SPAN_EXT_CONTROL)/4]=0x0;
 	else if(window==1)
-		*(ADDR_SPAN_EXT_CONTROL)= ACP_BASE;
+		test[(offset+ADDR_SPAN_EXT_CONTROL)/4]= ACP_BASE;
 }
 
 
-__kernel void trojan(global unsigned int * restrict timings, global  unsigned long TIMER, global unsigned long ADDR_SPAN_EXT_CONTROL)
+__kernel void trojan(global unsigned int * restrict timings,global volatile unsigned int * restrict test)
 {
-	int i,readvalue;
-	unsigned int adr;
-	switch_addr_space((unsigned long *)ADDR_SPAN_EXT_CONTROL,0);
-	for(adr=DDR_WINDOW_BASE;adr<DDR_WINDOW_BASE+TOTAL_MEM;adr=adr+PAGE_SIZE) {
-		int start_time=start_timer((unsigned int *)TIMER) ;
-		for(i=0;i<1000;i++) readvalue=*((int *)adr);
-		int end_time=stop_timer((unsigned int *)TIMER);
-		//printf("adr= %x\n",adr);
-		timings[adr/PAGE_SIZE]=end_time-start_time;
-	}
-	switch_addr_space((unsigned long *)ADDR_SPAN_EXT_CONTROL,1);
-	for(adr=DDR_WINDOW_BASE;adr<DDR_WINDOW_BASE+TOTAL_MEM;adr=adr+PAGE_SIZE) {
-		int start_time=start_timer((unsigned int *)TIMER) ;
-		for(i=0;i<1000;i++) readvalue=*((int *)adr);
-		int end_time=stop_timer((unsigned int *)TIMER);
-		timings[adr/PAGE_SIZE]=end_time-start_time;
-		printf("adr=%x,readvalue=%x\ttime=%d\n",adr,readvalue,end_time-start_time);
-	}
+	int total,i,readvalue,offset;
+	unsigned int adr=0;
+	offset=0x40000000-(int)test;
+	printf("adr= 0x%x offset=%d\n",(int)test,offset);
+	//switch_addr_space(0);
+	//for(adr=DDR_WINDOW_BASE;adr<DDR_WINDOW_BASE+TOTAL_MEM;adr=adr+PAGE_SIZE) {
+	//for(adr=0;adr<10000;adr=adr+1) {
+		//for(i=0;i<4000;i++) {
+		////printf("adr= %d\n",end_time);
+		//timings[i]=end_time;
+		//}
+		
+		total=0;
+		for(i=0;i<4000;i++) {
+		//int start_time=start_timer(test) ;
+		timings[adr/PAGE_SIZE]=test[(offset+adr+0x20)/4]; //int is 4 bytes
+		//int end_time=stop_timer(test);
+		//timings[adr/PAGE_SIZE]=timings[adr/PAGE_SIZE]+end_time-start_time; //int is 4 bytes
+		//total=total+end_time-start_time;
+		printf("adr= %d time=%x\n",adr,test[(offset+adr+0x20)/4]);
+		}
+		//timings[adr/PAGE_SIZE]=total; //int is 4 bytes
+		//printf("adr=%x,\treadvalue=%x,\ttime=%d\n",adr,readvalue,timings[adr >> 12]);
+	//}
+	//for(adr=DDR_WINDOW_BASE;adr<DDR_WINDOW_BASE+TOTAL_MEM;adr=adr+PAGE_SIZE) {
+	//for(adr=(unsigned int *)0x00100000;adr<DDR_WINDOW_BASE+TOTAL_MEM;adr=adr+PAGE_SIZE) {
+		//int start_time=start_timer() ;
+		//for(i=0;i<1000;i++) readvalue=*(adr);
+		//for(i=0;i<1000;i++) *(adr)=i;
+		//int end_time=stop_timer();
+		///timings[adr/PAGE_SIZE]=end_time-start_time;
+		//timings[(int)adr >> 12]=*(adr);
+		//printf("adr=%x,\ttime=%d\n",adr,end_time-start_time);
+		//printf("readvalue=%d\n",*(adr));
+		//printf("adr=%lx,\treadvalue=%x,\ttime=%d\n",adr,readvalue,end_time-start_time);
+	//}
 }

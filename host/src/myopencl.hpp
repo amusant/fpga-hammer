@@ -58,8 +58,8 @@ class myopencl {
   		queue1 = clCreateCommandQueue(context, device, 0, &status);
   		checkError(status, "Error: could not create command queue");
 
-  		//queue2 = clCreateCommandQueue(context, device, 0, &status);
-  		//checkError(status, "Error: could not create command queue");
+  		queue2 = clCreateCommandQueue(context, device, 0, &status);
+  		checkError(status, "Error: could not create command queue");
 
   		std::string binary_file = getBoardBinaryFile("trojan", device);
   		std::cout << "Using AOCX: " << binary_file << "\n";
@@ -72,15 +72,15 @@ class myopencl {
   		checkError(status, "Error: could not create trojan kernel");
 
 
-  		//in_buffer = clCreateBuffer(context, CL_MEM_READ_ONLY, sizeof(unsigned int) * ROWS * COLS/2, NULL, &status);
-  		//checkError(status, "Error: could not create device buffer");
+  		in_buffer = clCreateBuffer(context, CL_MEM_READ_WRITE |CL_MEM_ALLOC_HOST_PTR, sizeof(unsigned int) * 4, NULL, &status);
+  		checkError(status, "Error: could not create device buffer");
 
   		out_buffer = clCreateBuffer(context, CL_MEM_WRITE_ONLY, sizeof(unsigned int) * (TOTAL_MEM/PAGE_SIZE), NULL, &status);
   		checkError(status, "Error: could not create output buffer");
 
   		status  = clSetKernelArg(kernel1, 0, sizeof(cl_mem), &out_buffer);
-  		status |= clSetKernelArg(kernel1, 1, sizeof(unsigned long), &timer_addr);
-  		status |= clSetKernelArg(kernel1, 2, sizeof(unsigned long), &addr_span_ext_control);
+  		status |= clSetKernelArg(kernel1, 1, sizeof(cl_mem), &in_buffer);
+  		//status |= clSetKernelArg(kernel1, 2, sizeof(unsigned long), &addr_span_ext_control);
   		//status |= clSetKernelArg(kernel2, 4, sizeof(cl_mem), &out_buffer);
   		checkError(status, "Error: could not set fdetect args");
 	};
@@ -88,18 +88,18 @@ class myopencl {
 		thresh=thr;
 	}
 		
-	//void enqueue(cl_uint *input){
-  	//	status = clEnqueueWriteBuffer(queue1, in_buffer, CL_TRUE, 0, sizeof(unsigned int) * ROWS * COLS/2, input, 0, NULL, &eventq);
-  	//	checkError(status, "Error: could not copy data into device");
-
-  	//	status = clFinish(queue1);
-  	//	checkError(status, "Error: could not finish successfully");
-	//};
-	void dequeue(cl_uint *output){
-  		status = clEnqueueReadBuffer(queue1, out_buffer, CL_TRUE, 0, sizeof(unsigned int) * (TOTAL_MEM/PAGE_SIZE), output, 0, NULL, NULL);
-  		checkError(status, "Error: could not copy data from device");
+	void enqueue(cl_uint *input){
+  		status = clEnqueueWriteBuffer(queue1, in_buffer, CL_TRUE, 0, sizeof(unsigned int) * 4, input, 0, NULL, NULL);
+  		checkError(status, "Error: could not copy data into device");
 
   		status = clFinish(queue1);
+  		checkError(status, "Error: could not finish successfully");
+	};
+	void dequeue(cl_uint *output){
+  		status = clEnqueueReadBuffer(queue2, out_buffer, CL_TRUE, 0, sizeof(unsigned int) * (TOTAL_MEM/PAGE_SIZE), output, 0, NULL, NULL);
+  		checkError(status, "Error: could not copy data from device");
+
+  		status = clFinish(queue2);
   		checkError(status, "Error: could not successfully finish copy");
 
 	};
