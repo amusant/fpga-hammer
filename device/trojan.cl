@@ -45,11 +45,14 @@ __kernel void trojan(global unsigned int * restrict timings,global volatile unsi
 		total=0;
 		for(i=0;i<4000;i++) {
 		//int start_time=start_timer(test) ;
-		timings[adr/PAGE_SIZE]=test[(offset+adr+0x20)/4]; //int is 4 bytes
+		printf("START adr= %d time=%x\n",i,test[(offset+adr+0x20)/4]);
+		mem_fence(CLK_GLOBAL_MEM_FENCE);
+		timings[i]=test[(offset+adr+0x20)/4]; //int is 4 bytes
 		//int end_time=stop_timer(test);
 		//timings[adr/PAGE_SIZE]=timings[adr/PAGE_SIZE]+end_time-start_time; //int is 4 bytes
 		//total=total+end_time-start_time;
-		printf("adr= %d time=%x\n",adr,test[(offset+adr+0x20)/4]);
+		mem_fence(CLK_GLOBAL_MEM_FENCE);
+		printf("STOP  adr= %d time=%x\n",i,test[(offset+adr+0x20)/4]);
 		}
 		//timings[adr/PAGE_SIZE]=total; //int is 4 bytes
 		//printf("adr=%x,\treadvalue=%x,\ttime=%d\n",adr,readvalue,timings[adr >> 12]);
