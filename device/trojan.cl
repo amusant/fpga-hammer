@@ -46,6 +46,8 @@ __kernel void trojan(global unsigned int * restrict timings,global volatile unsi
 		//}
 		
 		total=0;
+		test[(offset+adr+0x20)/4]=0;
+		mem_fence(CLK_GLOBAL_MEM_FENCE);
 		printf("START adr= %d time=%d\n",adr,test[(offset+adr+0x20)/4]);
 		timings[2*adr]=test[(offset+adr+0x20)/4];
 		//mem_fence(CLK_GLOBAL_MEM_FENCE);
