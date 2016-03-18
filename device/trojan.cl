@@ -34,7 +34,7 @@ __kernel void trojan(global unsigned int * restrict timings,global volatile unsi
 	volatile int readvalue;
 	unsigned int adr=0;
 	offset=0x40000000-(int)test;
-	//offset=0;
+	offset=0;
 	printf("adr= 0x%x offset=%d\n",(int)test,offset);
 	//switch_addr_space(0);
 	//for(adr=DDR_WINDOW_BASE;adr<DDR_WINDOW_BASE+TOTAL_MEM;adr=adr+PAGE_SIZE) {
@@ -46,16 +46,18 @@ __kernel void trojan(global unsigned int * restrict timings,global volatile unsi
 		//}
 		
 		total=0;
-		test[(offset+adr+0x20)/4]=0;
-		mem_fence(CLK_GLOBAL_MEM_FENCE);
+		//wriitng to teh timer hansg teh program (below)
+		//test[(offset+adr+0x20)/4]=0;
+		//mem_fence(CLK_GLOBAL_MEM_FENCE);
+		//wriitng to teh timer hansg teh program (end)
 		printf("START adr= %d time=%d\n",adr,test[(offset+adr+0x20)/4]);
 		timings[2*adr]=test[(offset+adr+0x20)/4];
-		//mem_fence(CLK_GLOBAL_MEM_FENCE);
+		mem_fence(CLK_GLOBAL_MEM_FENCE);
 		#pragma unroll 1
 		for(i=0;i<4096;i++) {
 		//int start_time=start_timer(test) ;
 		//mem_fence(CLK_GLOBAL_MEM_FENCE);
-		readvalue=test[(offset+adr+0x20)/4]; //int is 4 bytes
+		readvalue=test[adr]; //int is 4 bytes
 		if(readvalue==0x12345678) break;
 		//int end_time=stop_timer(test);
 		//timings[adr/PAGE_SIZE]=timings[adr/PAGE_SIZE]+end_time-start_time; //int is 4 bytes
