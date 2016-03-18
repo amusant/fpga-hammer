@@ -72,7 +72,7 @@ class myopencl {
   		checkError(status, "Error: could not create trojan kernel");
 
 
-  		in_buffer = clCreateBuffer(context, CL_MEM_READ_WRITE |CL_MEM_ALLOC_HOST_PTR, sizeof(unsigned int) * 4, NULL, &status);
+  		in_buffer = clCreateBuffer(context, CL_MEM_READ_WRITE |CL_MEM_ALLOC_HOST_PTR, sizeof(unsigned int) * 10, NULL, &status);
   		checkError(status, "Error: could not create device buffer");
 
   		out_buffer = clCreateBuffer(context, CL_MEM_WRITE_ONLY, sizeof(unsigned int) * (TOTAL_MEM/PAGE_SIZE), NULL, &status);
@@ -89,7 +89,7 @@ class myopencl {
 	}
 		
 	void enqueue(cl_uint *input){
-  		status = clEnqueueWriteBuffer(queue1, in_buffer, CL_TRUE, 0, sizeof(unsigned int) * 4, input, 0, NULL, NULL);
+  		status = clEnqueueWriteBuffer(queue1, in_buffer, CL_TRUE, 0, sizeof(unsigned int) * 10, input, 0, NULL, NULL);
   		checkError(status, "Error: could not copy data into device");
 
   		status = clFinish(queue1);

@@ -18,7 +18,7 @@ int i=0;
 	//allocate memory
   	//input = (unsigned int *)alignedMalloc(sizeof(unsigned int) * ROWS * COLS/2);
   	timings = (unsigned int *)alignedMalloc(sizeof(unsigned int) * (TOTAL_MEM/PAGE_SIZE));
-  	timer =   (unsigned int *)alignedMalloc(sizeof(unsigned int) * 4);
+  	timer =   (unsigned int *)alignedMalloc(sizeof(unsigned int) * 10);
 	//timer=(unsigned int *)0xc000000;
 	//load Image
 	std::ofstream of ("timings.txt", std::ofstream::binary|std::ofstream::app);
