@@ -30,33 +30,43 @@ void switch_addr_space(global unsigned int *test,int window){
 
 __kernel void trojan(global unsigned int * restrict timings,global volatile unsigned int * restrict test)
 {
-	int total,i,readvalue,offset;
+	int total,i,offset;
+	volatile int readvalue;
 	unsigned int adr=0;
 	offset=0x40000000-(int)test;
+	//offset=0;
 	printf("adr= 0x%x offset=%d\n",(int)test,offset);
 	//switch_addr_space(0);
 	//for(adr=DDR_WINDOW_BASE;adr<DDR_WINDOW_BASE+TOTAL_MEM;adr=adr+PAGE_SIZE) {
-	//for(adr=0;adr<10000;adr=adr+1) {
+	#pragma unroll 1
+	for(adr=0;adr<10;adr=adr+1) {
 		//for(i=0;i<4000;i++) {
 		////printf("adr= %d\n",end_time);
 		//timings[i]=end_time;
 		//}
 		
 		total=0;
-		for(i=0;i<4000;i++) {
+		printf("START adr= %d time=%d\n",adr,test[(offset+adr+0x20)/4]);
+		timings[2*adr]=test[(offset+adr+0x20)/4];
+		//mem_fence(CLK_GLOBAL_MEM_FENCE);
+		#pragma unroll 1
+		for(i=0;i<4096;i++) {
 		//int start_time=start_timer(test) ;
-		printf("START adr= %d time=%x\n",i,test[(offset+adr+0x20)/4]);
-		mem_fence(CLK_GLOBAL_MEM_FENCE);
-		timings[i]=test[(offset+adr+0x20)/4]; //int is 4 bytes
+		//mem_fence(CLK_GLOBAL_MEM_FENCE);
+		readvalue=test[(offset+adr+0x20)/4]; //int is 4 bytes
+		if(readvalue==0x12345678) break;
 		//int end_time=stop_timer(test);
 		//timings[adr/PAGE_SIZE]=timings[adr/PAGE_SIZE]+end_time-start_time; //int is 4 bytes
 		//total=total+end_time-start_time;
-		mem_fence(CLK_GLOBAL_MEM_FENCE);
-		printf("STOP  adr= %d time=%x\n",i,test[(offset+adr+0x20)/4]);
 		}
+		readvalue=timings[2*adr+1]=test[(offset+adr+0x20)/4];
+		//readvalue=test[(offset+adr+0x20)/4];
+		//mem_fence(CLK_GLOBAL_MEM_FENCE);
+		printf("STOP  adr= %d time=%d\n",adr,test[(offset+adr+0x20)/4]);
+		if(readvalue==0x12345678) break;
 		//timings[adr/PAGE_SIZE]=total; //int is 4 bytes
 		//printf("adr=%x,\treadvalue=%x,\ttime=%d\n",adr,readvalue,timings[adr >> 12]);
-	//}
+	}
 	//for(adr=DDR_WINDOW_BASE;adr<DDR_WINDOW_BASE+TOTAL_MEM;adr=adr+PAGE_SIZE) {
 	//for(adr=(unsigned int *)0x00100000;adr<DDR_WINDOW_BASE+TOTAL_MEM;adr=adr+PAGE_SIZE) {
 		//int start_time=start_timer() ;
