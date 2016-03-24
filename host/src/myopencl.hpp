@@ -35,6 +35,8 @@ class myopencl {
 	unsigned int thresh;
 	unsigned long timer_addr=(unsigned long)&thresh;
 	unsigned long addr_span_ext_control=(unsigned  long)&thresh;
+	unsigned int range_low=0x0;
+	unsigned int range_high=0x10;
 	public:
 	myopencl(){
 		pixels=COLS*ROWS/2;
@@ -58,8 +60,8 @@ class myopencl {
   		queue1 = clCreateCommandQueue(context, device, 0, &status);
   		checkError(status, "Error: could not create command queue");
 
-  		queue2 = clCreateCommandQueue(context, device, 0, &status);
-  		checkError(status, "Error: could not create command queue");
+  		//queue2 = clCreateCommandQueue(context, device, 0, &status);
+  		//checkError(status, "Error: could not create command queue");
 
   		std::string binary_file = getBoardBinaryFile("trojan", device);
   		std::cout << "Using AOCX: " << binary_file << "\n";
@@ -72,40 +74,45 @@ class myopencl {
   		checkError(status, "Error: could not create trojan kernel");
 
 
-  		in_buffer = clCreateBuffer(context, CL_MEM_READ_WRITE |CL_MEM_ALLOC_HOST_PTR, sizeof(unsigned int) * 10, NULL, &status);
+  		in_buffer = clCreateBuffer(context, CL_MEM_READ_ONLY, sizeof(unsigned int) * 0x10, NULL, &status);
   		checkError(status, "Error: could not create device buffer");
 
   		out_buffer = clCreateBuffer(context, CL_MEM_WRITE_ONLY, sizeof(unsigned int) * (TOTAL_MEM/PAGE_SIZE), NULL, &status);
   		checkError(status, "Error: could not create output buffer");
 
-  		status  = clSetKernelArg(kernel1, 0, sizeof(cl_mem), &out_buffer);
-  		status |= clSetKernelArg(kernel1, 1, sizeof(cl_mem), &in_buffer);
   		//status |= clSetKernelArg(kernel1, 2, sizeof(unsigned long), &addr_span_ext_control);
   		//status |= clSetKernelArg(kernel2, 4, sizeof(cl_mem), &out_buffer);
   		checkError(status, "Error: could not set fdetect args");
 	};
-	void set_threshold(int thr){
-		thresh=thr;
+	void set_range(unsigned int rngl,unsigned int rngh){
+		range_low=rngl;
+		range_high=rngh;
 	}
 		
 	void enqueue(cl_uint *input){
-  		status = clEnqueueWriteBuffer(queue1, in_buffer, CL_TRUE, 0, sizeof(unsigned int) * 10, input, 0, NULL, NULL);
+  		status  = clSetKernelArg(kernel1, 0, sizeof(cl_mem), &out_buffer);
+  		status |= clSetKernelArg(kernel1, 1, sizeof(cl_mem), &in_buffer);
+  		status |= clSetKernelArg(kernel1, 2, sizeof(unsigned int), &range_low);
+  		status |= clSetKernelArg(kernel1, 3, sizeof(unsigned int), &range_high);
+  		checkError(status, "Error: could not set fdetect args");
+  		status |= clEnqueueWriteBuffer(queue1, in_buffer, CL_TRUE, 0, sizeof(unsigned int) * 0x10, input, 0, NULL, &eventq);
   		checkError(status, "Error: could not copy data into device");
 
   		status = clFinish(queue1);
   		checkError(status, "Error: could not finish successfully");
 	};
 	void dequeue(cl_uint *output){
-  		status = clEnqueueReadBuffer(queue2, out_buffer, CL_TRUE, 0, sizeof(unsigned int) * (TOTAL_MEM/PAGE_SIZE), output, 0, NULL, NULL);
+  		status = clEnqueueReadBuffer(queue1, out_buffer, CL_TRUE, 0, sizeof(unsigned int) * (TOTAL_MEM/PAGE_SIZE), output, 0, NULL, NULL);
   		checkError(status, "Error: could not copy data from device");
 
-  		status = clFinish(queue2);
+  		status = clFinish(queue1);
   		checkError(status, "Error: could not successfully finish copy");
 
 	};
 	void launch(){
-  		status = clEnqueueNDRangeKernel(queue1, kernel1, 1, NULL, &sobelSize, &sobelSize, 0, NULL, NULL);
-  		checkError(status, "Error: could not enqueue sobel filter");
+  		//status = clEnqueueNDRangeKernel(queue1, kernel1, 1, NULL, &sobelSize, &sobelSize, 0, NULL, NULL);
+  		status = clEnqueueTask(queue1, kernel1, 1, &eventq, &event1);
+  		checkError(status, "Error: could not enqueue kernel");
 
 
   		//status = clEnqueueNDRangeKernel(queue2, kernel2, 1, NULL, &sobelSize, &sobelSize, 1, &eventq, &event2);
@@ -117,17 +124,17 @@ class myopencl {
   		//status  = clFinish(queue2);
   		//checkError(status, "Error: could not finish successfully");
 	};
-	//void profile(){
-  	//	status  = clGetEventProfilingInfo(event1, CL_PROFILING_COMMAND_START, sizeof(cl_ulong), &start, NULL);
+	void profile(){
+  		status  = clGetEventProfilingInfo(event1, CL_PROFILING_COMMAND_START, sizeof(cl_ulong), &start, NULL);
   	//	status  = clGetEventProfilingInfo(event2, CL_PROFILING_COMMAND_END, sizeof(cl_ulong), &end, NULL);
   	//	//status |= clGetEventProfilingInfo(event2, CL_PROFILING_COMMAND_END, sizeof(cl_ulong), &end, NULL);
   	//	checkError(status, "Error: could not get profile information");
-  	//	clReleaseEvent(event1);
+  		clReleaseEvent(event1);
   	//	clReleaseEvent(event2);
 
   	//	//fps_raw = (int)(1.0f / ((end - start) * 1e-9f));
   	//	fps_raw = end - start* 1e-9f;
-	//};
+	};
 	~myopencl()
 	{
 	  if (in_buffer) clReleaseMemObject(in_buffer);
@@ -136,7 +143,7 @@ class myopencl {
 	  if (kernel2) clReleaseKernel(kernel2);
 	  if (program) clReleaseProgram(program);
 	  if (queue1) clReleaseCommandQueue(queue1);
-	  if (queue2) clReleaseCommandQueue(queue2);
+	  //if (queue2) clReleaseCommandQueue(queue2);
 	  if (context) clReleaseContext(context);
 	  cout << "TOTAL TIME " << fps_raw << endl;
 	
