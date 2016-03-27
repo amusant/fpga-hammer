@@ -28,31 +28,39 @@ void switch_addr_space(global unsigned int *test,int window){
 }
 
 
-__kernel void trojan(global volatile unsigned int * restrict timings,global volatile unsigned int * restrict test,const unsigned int range_low,const unsigned int range_high)
+__kernel void trojan(global volatile unsigned int * restrict timings,global volatile unsigned int * restrict test,
+			const unsigned int range_low,const unsigned int range_high,const unsigned int inner_iter, const unsigned int cache_user_mask)
 {
 	int total,i,offset;
-	volatile int readvalue;
-	unsigned int adr=0;
+	int adr=0;
 	offset=0x40000000-(int)test;
 	#pragma unroll 1
 	for(adr=range_low;adr< (range_high+range_low);adr=adr+0x1000) {
+	volatile int readvalue;
 		
-		if(test[(offset+0x20)/4]==0x12345678) break;
+		//if(test[(offset+0x20)/4]==0x12345678) break;
+		test[(offset+ADDR_SPAN_EXT_CONTROL)/4]=0x80000000;  //lower word
+		test[(offset+ADDR_SPAN_EXT_CONTROL)/4+1]=0x00000001;// upeer word
+		mem_fence(CLK_GLOBAL_MEM_FENCE);
+		test[(offset+0x20)/4+1]= cache_user_mask; //cache and user settings
 		timings[2*(adr >> 12)]=test[(offset+0x20)/4];
 		//mem_fence(CLK_GLOBAL_MEM_FENCE);
-		//test[(offset+ADDR_SPAN_EXT_CONTROL)/4]=0x80000000;  //lower word
-		//test[(offset+ADDR_SPAN_EXT_CONTROL)/4+1]=0x00000001;// upeer word
 		#pragma unroll 1
-		for(i=0;i<4096;i++) {
-			//mem_fence(CLK_GLOBAL_MEM_FENCE);
-			readvalue=test[adr]; //int is 4 bytes
-			if(readvalue==0x12345678) break;
+		for(i=0;i<inner_iter;i++) {
+			mem_fence(CLK_GLOBAL_MEM_FENCE);
+			readvalue=readvalue+test[adr]; //int is 4 bytes
+			//if(readvalue==0x12345678) break;
+			mem_fence(CLK_GLOBAL_MEM_FENCE);
 		}
-		if(test[(offset+0x20)/4]==0x12345678) break;
+		mem_fence(CLK_GLOBAL_MEM_FENCE);
+		test[(offset+ADDR_SPAN_EXT_CONTROL)/4]=0x00000000;  //lower word
+		test[(offset+ADDR_SPAN_EXT_CONTROL)/4+1]=0x00000000;// upeer word
 		timings[2*(adr >> 12)+1]=test[(offset+0x20)/4];
-		//test[(offset+ADDR_SPAN_EXT_CONTROL)/4]=0x00000000;  //lower word
-		//test[(offset+ADDR_SPAN_EXT_CONTROL)/4+1]=0x00000000;// upeer word
-		//mem_fence(CLK_GLOBAL_MEM_FENCE);
+		test[(offset+0x20)/4+1]=0x0; //cache and user settings
+		//if(readvalue==0x12345678) break;
+		mem_fence(CLK_GLOBAL_MEM_FENCE);
+		timings[0]=readvalue;
+		//timings[2*(adr >> 12)+1]=readvalue;
 	}
 	//writing 0x180000000 to address span extender should set the base address to ACP 
 	//from FPGA2HPS. ACP is visible at 0x80000000 from FPGA2HPS

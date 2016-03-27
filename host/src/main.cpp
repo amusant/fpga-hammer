@@ -17,9 +17,12 @@ int main(int argc, char *argv[]){
 myopencl trojan;
 int i,j=0;
 	//allocate memory
-  	timings = (unsigned int *)alignedMalloc(sizeof(unsigned int) * (TOTAL_MEM/PAGE_SIZE));
+  	timings = (unsigned int *)alignedMalloc(sizeof(unsigned int) * 2*(TOTAL_MEM/PAGE_SIZE));
   	timer =   (unsigned int *)alignedMalloc(sizeof(unsigned int) * 10);
 	timer[8]=0xABABABAB;
+	cout << "start sleep" << endl;
+	std::this_thread::sleep_for (std::chrono::seconds(30));
+	cout << "end sleep" << endl;
 	if (argc < 3) { cout << "needs two arguments:range_low rang_high" << endl;exit(0); }
 	else trojan.set_range(atoi(argv[1]),atoi(argv[2]));
 	std::ofstream of ("timings.txt", std::ofstream::binary|std::ofstream::app);
@@ -45,8 +48,8 @@ int i,j=0;
 		if(timer[i]==0x12345678)  printf("strange to fidn this number here %d",timer[i]);
 	}
 	}
-	if(of) of.write((char *)(timings),TOTAL_MEM/PAGE_SIZE);
-	for(i=0;i<TOTAL_MEM/(2*PAGE_SIZE);i++) printf("PAGE=0x%x, time=%d\n",i,(timings[2*i+2]-timings[2*i])/4096);
+	if(of) of.write((char *)(timings),2*4*(TOTAL_MEM/PAGE_SIZE));
+	//for(i=0;i<TOTAL_MEM/(2*PAGE_SIZE);i++) printf("PAGE=0x%x, time=%d\n",i,(timings[2*i+2]-timings[2*i])/10);
 	//std::this_thread::sleep_for (std::chrono::seconds(1));
 	of.close();
 	//if (input) alignedFree(input);

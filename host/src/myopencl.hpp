@@ -37,6 +37,8 @@ class myopencl {
 	unsigned long addr_span_ext_control=(unsigned  long)&thresh;
 	unsigned int range_low=0x0;
 	unsigned int range_high=0x10;
+	unsigned int inner_iter=256;
+	unsigned int cache_user_mask=0x00000B1F;
 	public:
 	myopencl(){
 		pixels=COLS*ROWS/2;
@@ -77,7 +79,7 @@ class myopencl {
   		in_buffer = clCreateBuffer(context, CL_MEM_READ_ONLY, sizeof(unsigned int) * 0x10, NULL, &status);
   		checkError(status, "Error: could not create device buffer");
 
-  		out_buffer = clCreateBuffer(context, CL_MEM_WRITE_ONLY, sizeof(unsigned int) * (TOTAL_MEM/PAGE_SIZE), NULL, &status);
+  		out_buffer = clCreateBuffer(context, CL_MEM_WRITE_ONLY, sizeof(unsigned int) * 2*(TOTAL_MEM/PAGE_SIZE), NULL, &status);
   		checkError(status, "Error: could not create output buffer");
 
   		//status |= clSetKernelArg(kernel1, 2, sizeof(unsigned long), &addr_span_ext_control);
@@ -94,6 +96,8 @@ class myopencl {
   		status |= clSetKernelArg(kernel1, 1, sizeof(cl_mem), &in_buffer);
   		status |= clSetKernelArg(kernel1, 2, sizeof(unsigned int), &range_low);
   		status |= clSetKernelArg(kernel1, 3, sizeof(unsigned int), &range_high);
+  		status |= clSetKernelArg(kernel1, 4, sizeof(unsigned int), &inner_iter);
+  		status |= clSetKernelArg(kernel1, 5, sizeof(unsigned int), &cache_user_mask);
   		checkError(status, "Error: could not set fdetect args");
   		status |= clEnqueueWriteBuffer(queue1, in_buffer, CL_TRUE, 0, sizeof(unsigned int) * 0x10, input, 0, NULL, &eventq);
   		checkError(status, "Error: could not copy data into device");
