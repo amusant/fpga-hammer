@@ -37,7 +37,7 @@ class myopencl {
 	unsigned long addr_span_ext_control=(unsigned  long)&thresh;
 	unsigned int range_low=0x0;
 	unsigned int range_high=0x10;
-	unsigned int inner_iter=256;
+	unsigned int inner_iter=128;
 	unsigned int cache_user_mask=0x00000B1F;
 	public:
 	myopencl(){
@@ -90,6 +90,9 @@ class myopencl {
 		range_low=rngl;
 		range_high=rngh;
 	}
+	void set_cache_user_mask(unsigned int mask){
+		cache_user_mask=mask;
+	}
 		
 	void enqueue(cl_uint *input){
   		status  = clSetKernelArg(kernel1, 0, sizeof(cl_mem), &out_buffer);
@@ -99,6 +102,7 @@ class myopencl {
   		status |= clSetKernelArg(kernel1, 4, sizeof(unsigned int), &inner_iter);
   		status |= clSetKernelArg(kernel1, 5, sizeof(unsigned int), &cache_user_mask);
   		checkError(status, "Error: could not set fdetect args");
+
   		status |= clEnqueueWriteBuffer(queue1, in_buffer, CL_TRUE, 0, sizeof(unsigned int) * 0x10, input, 0, NULL, &eventq);
   		checkError(status, "Error: could not copy data into device");
 
