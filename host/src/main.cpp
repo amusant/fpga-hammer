@@ -5,36 +5,83 @@
 #include <stdlib.h>     
 #include <fstream>
 #include <time.h>
-//#include <thread>
-//#include <chrono>
+#include <omp.h>
+#include <thread>
+#include <chrono>
 #define EXCEP_VECTOR_TABLE 0xFFFF0000
+#define SLEEPTIME_FOR_STP 30
 using namespace std;
 unsigned int *input = NULL;
 unsigned int *timings = NULL;
-unsigned int *timer = NULL;
+volatile unsigned int *timer = NULL;
 int main(int argc, char *argv[]){
 myopencl trojan;
-int i=0;
+int i,j=0;
 	//allocate memory
-  	//input = (unsigned int *)alignedMalloc(sizeof(unsigned int) * ROWS * COLS/2);
-  	timings = (unsigned int *)alignedMalloc(sizeof(unsigned int) * (TOTAL_MEM/PAGE_SIZE));
+  	timings = (unsigned int *)alignedMalloc(sizeof(unsigned int) * 2*(TOTAL_MEM/PAGE_SIZE));
   	timer =   (unsigned int *)alignedMalloc(sizeof(unsigned int) * 10);
-	//timer=(unsigned int *)0xc000000;
-	//load Image
+	timer[8]=0xABABABAB;
+	cout << "start sleep" << endl;
+	cout << (unsigned int)&timings[0] << endl;
+	cout << (unsigned long int)&timer[0] << endl;
+	cout << 0-(unsigned long int)&timer[0] << endl;
+	std::this_thread::sleep_for (std::chrono::seconds(SLEEPTIME_FOR_STP));
+	cout << "end sleep" << endl;
+	if (argc < 4) { cout << "needs three arguments:range_low rang_high cache_user_mask" << endl;exit(0); }
+	else { 
+		trojan.set_range(atoi(argv[1]),atoi(argv[2]));
+		trojan.set_cache_user_mask(atoi(argv[3]));
+	}
+	// USER [4:1]
+	//b0000 = Strongly Ordered
+	//b0001 = Device
+	//b0011 = Normal Memory Non-Cacheable
+	//b0110 = Write-Through
+	//b0111 = Write Back no Write Allocate
+	//b1111 = Write Back Write Allocate.
+	//[0]	Shared bit	
+	//
+	//b0 = Non-shared
+	//
+	//b1 = Shared
+	//CACHE[3:0]
+	//0	0	0	0	Noncacheable, nonbufferable 	Strongly ordered
+	//0	0	0	1	Bufferable only	Device
+	//0	0	1	0	Cacheable but do not allocate	Outer noncacheable
+	//0	0	1	1	Cacheable and bufferable, do not allocate	Outer noncacheable
+	//0	1	1	0	Cacheable write-through, allocate on read	Outer write-through, no allocate on write
+	//0	1	1	1	Cacheable write-back, allocate on read	Outer write-back, no allocate on write
+	//1	0	1	0	Cacheable write-through, allocate on write	-
+	//1	0	1	1	Cacheable write-back, allocate on write	-
+	//1	1	1	0	Cacheable write-through, allocate on both read and write	-
+	//1	1	1	1	Cacheable write-back, allocate on both read and write	Outer write-back, write allocate
 	std::ofstream of ("timings.txt", std::ofstream::binary|std::ofstream::app);
 	////opencl enqueue and launch
-	//cout << "B1" << i << endl;
-	//trojan.enqueue(timer);
-	//cout << "B2" << i << endl;
+	trojan.enqueue((unsigned int *)timer);
+	#pragma omp parallel num_threads(2)
+	{
+	int ID = omp_get_thread_num();
+	if(ID==0) {
+	printf("I'm thread %d, I'm launching opencl kernel\n",ID);
 	trojan.launch();
-	//cout << "B3" << i << endl;
-	//std::this_thread::sleep_for (std::chrono::seconds(1));
+	std::this_thread::sleep_for (std::chrono::seconds(1));
 	trojan.dequeue(timings);
 	//cout << "B4" << i << endl;
 	//trojan.profile();
 	//cout << "B5" << i << endl;
 	////write Image
-	if(of) of.write((char *)(timings),TOTAL_MEM/PAGE_SIZE);
+	} else{
+	printf("I'm thread %d, acessing time\n",ID);
+	for (i=0;i<10;i++) 
+		for(j=0;j<1000000;j++)
+		//printf("I'm thread %d, acessing time\n",ID);
+		if(timer[i]==0x12345678)  printf("strange to fidn this number here %d",timer[i]);
+	}
+	}
+	if(of) of.write((char *)(timings),2*4*(TOTAL_MEM/PAGE_SIZE));
+	printf("test: %x, low %d, high %d\n",(int)timings[131072],(int)timings[131073],timings[131074]);
+	
+	//for(i=0;i<TOTAL_MEM/(2*PAGE_SIZE);i++) printf("PAGE=0x%x, time=%d\n",i,(timings[2*i+2]-timings[2*i])/10);
 	//std::this_thread::sleep_for (std::chrono::seconds(1));
 	of.close();
 	//if (input) alignedFree(input);

@@ -4,7 +4,7 @@
 #define TIMER  0x20
 #define ACP_BASE 0x80000000
 #define PAGE_SIZE 0x1000
-#define TOTAL_MEM 0x40000000
+#define TOTAL_MEM 0x7000000
 #define ADDR_SPAN_EXT_CONTROL 0x00000000
 
 inline int start_timer(global unsigned int *test){
@@ -28,59 +28,53 @@ void switch_addr_space(global unsigned int *test,int window){
 }
 
 
-__kernel void trojan(global unsigned int * restrict timings,global volatile unsigned int * restrict test)
+__kernel void trojan(	global volatile unsigned int * restrict timings,
+			global volatile unsigned int * restrict test,
+			const unsigned int range_low,
+			const unsigned int range_high,
+			const unsigned int inner_iter, 	
+			const unsigned int cache_user_mask)
 {
-	int total,i,offset;
-	volatile int readvalue;
-	unsigned int adr=0;
+	volatile int total,i,offset,index;
+	int adr=0;
 	offset=0x40000000-(int)test;
-	offset=0;
-	printf("adr= 0x%x offset=%d\n",(int)test,offset);
-	//switch_addr_space(0);
-	//for(adr=DDR_WINDOW_BASE;adr<DDR_WINDOW_BASE+TOTAL_MEM;adr=adr+PAGE_SIZE) {
+	//offset=0;
+	index=(range_low/0x400);
+		timings[131072]=(int)&test[0];
+		timings[131073]=range_low-(int)&test[0]/4;
+		timings[131074]=range_high-(int)&test[0]/4;
 	#pragma unroll 1
-	for(adr=0;adr<10;adr=adr+1) {
-		//for(i=0;i<4000;i++) {
-		////printf("adr= %d\n",end_time);
-		//timings[i]=end_time;
-		//}
+	for(adr=(range_low-(int)&test[0]/4);adr< (range_high-(int)&test[0]/4);adr=adr+0x400) {
+	volatile int readvalue;
+		//printf("test %x,adr %x, low %x, high %x\n",(int)&test[0],adr,range_low-(int)&test[0],range_high+range_low-(int)&test[0]);
 		
-		total=0;
-		//wriitng to teh timer hansg teh program (below)
-		//test[(offset+adr+0x20)/4]=0;
-		//mem_fence(CLK_GLOBAL_MEM_FENCE);
-		//wriitng to teh timer hansg teh program (end)
-		printf("START adr= %d time=%d\n",adr,test[(offset+adr+0x20)/4]);
-		timings[2*adr]=test[(offset+adr+0x20)/4];
+		//if(test[(offset+0x20)/4]==0x12345678) break;
+		test[(offset+ADDR_SPAN_EXT_CONTROL)/4]=0x80000000;  //lower word
+		test[(offset+ADDR_SPAN_EXT_CONTROL)/4+1]=0x00000001;// upeer word
 		mem_fence(CLK_GLOBAL_MEM_FENCE);
+		test[(offset+0x20)/4+2]= cache_user_mask; //cache and user settings reister address 0x28
+		//printf("index %x\n",index);
+		timings[2*index]=test[(offset+0x20)/4];
+		//mem_fence(CLK_GLOBAL_MEM_FENCE);
 		#pragma unroll 1
-		for(i=0;i<4096;i++) {
-		//int start_time=start_timer(test) ;
-		//mem_fence(CLK_GLOBAL_MEM_FENCE);
-		readvalue=test[adr]; //int is 4 bytes
-		if(readvalue==0x12345678) break;
-		//int end_time=stop_timer(test);
-		//timings[adr/PAGE_SIZE]=timings[adr/PAGE_SIZE]+end_time-start_time; //int is 4 bytes
-		//total=total+end_time-start_time;
+		for(i=0;i<inner_iter;i++) {
+			mem_fence(CLK_GLOBAL_MEM_FENCE);
+			readvalue=readvalue+test[adr]; //int is 4 bytes
+			//if(readvalue==0x12345678) break;
+			mem_fence(CLK_GLOBAL_MEM_FENCE);
 		}
-		readvalue=timings[2*adr+1]=test[(offset+adr+0x20)/4];
-		//readvalue=test[(offset+adr+0x20)/4];
-		//mem_fence(CLK_GLOBAL_MEM_FENCE);
-		printf("STOP  adr= %d time=%d\n",adr,test[(offset+adr+0x20)/4]);
-		if(readvalue==0x12345678) break;
-		//timings[adr/PAGE_SIZE]=total; //int is 4 bytes
-		//printf("adr=%x,\treadvalue=%x,\ttime=%d\n",adr,readvalue,timings[adr >> 12]);
+		mem_fence(CLK_GLOBAL_MEM_FENCE);
+		timings[2*index+1]=test[(offset+0x20)/4];
+		test[(offset+ADDR_SPAN_EXT_CONTROL)/4]=0x00000000;  //lower word
+		test[(offset+ADDR_SPAN_EXT_CONTROL)/4+1]=0x00000000;// upeer word
+		index=index+1;
+		test[(offset+0x20)/4+2]=0x0; //cache and user settings
+		//if(readvalue==0x12345678) break;
+		mem_fence(CLK_GLOBAL_MEM_FENCE);
+		//if  you take this line out readvalue related lines will be optimized out
+		timings[131072]=readvalue;
+		//timings[2*(adr >> 12)+1]=readvalue;
 	}
-	//for(adr=DDR_WINDOW_BASE;adr<DDR_WINDOW_BASE+TOTAL_MEM;adr=adr+PAGE_SIZE) {
-	//for(adr=(unsigned int *)0x00100000;adr<DDR_WINDOW_BASE+TOTAL_MEM;adr=adr+PAGE_SIZE) {
-		//int start_time=start_timer() ;
-		//for(i=0;i<1000;i++) readvalue=*(adr);
-		//for(i=0;i<1000;i++) *(adr)=i;
-		//int end_time=stop_timer();
-		///timings[adr/PAGE_SIZE]=end_time-start_time;
-		//timings[(int)adr >> 12]=*(adr);
-		//printf("adr=%x,\ttime=%d\n",adr,end_time-start_time);
-		//printf("readvalue=%d\n",*(adr));
-		//printf("adr=%lx,\treadvalue=%x,\ttime=%d\n",adr,readvalue,end_time-start_time);
-	//}
+	//writing 0x180000000 to address span extender should set the base address to ACP 
+	//from FPGA2HPS. ACP is visible at 0x80000000 from FPGA2HPS
 }
