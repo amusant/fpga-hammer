@@ -1,3 +1,3 @@
-for i in range(31):
-	for j in range(15):
-		print 4096*j+i
+for i in range(32):
+	for j in range(16):
+		print 256*j+i # 2^8(2^3+2^2+2^1+2^0)+2^4+2^3.....
