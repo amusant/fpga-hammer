@@ -39,14 +39,20 @@ __kernel void trojan(	global volatile unsigned int * restrict timings,
 	int adr=0;
 	offset=0x40000000-(int)test;
 	//offset=0;
+	test[(offset+0x20)/4+2]=0x0; //initialize
 	index=(range_low/0x400);
-		timings[131072]=(int)&test[0];
-		timings[131073]=range_low-(int)&test[0]/4;
-		timings[131074]=range_high-(int)&test[0]/4;
+		test[0]=(int)&test[0];
+		test[1]=range_low-(int)&test[0]/4;
+		test[2]=range_high-(int)&test[0]/4;
+		//printf("test %x, low %d, high %d\n",(int)&test[0],(range_low-(int)&test[0]/4),(range_high-(int)&test[0]/4));
 	#pragma unroll 1
-	for(adr=(range_low-(int)&test[0]/4);adr< (range_high-(int)&test[0]/4);adr=adr+0x400) {
+	int low=range_low-(int)&test[0]/4;
+	int high=range_high-(int)&test[0]/4;
+	for(adr=low;adr<high;adr=adr+0x400) {
+	//why the following lien doesn't work if range_high==&test[0]/4 ??
+	//for(adr=(range_low-(int)&test[0]/4);adr< (range_high-(int)&test[0]/4);adr=adr+0x400) {
 	volatile int readvalue,start,stop;
-		//printf("test %x,adr %x, low %x, high %x\n",(int)&test[0],adr,range_low-(int)&test[0],range_high+range_low-(int)&test[0]);
+		//printf("%d:%d\n",adr,index);
 		
 		//if(test[(offset+0x20)/4]==0x12345678) break;
 		test[(offset+ADDR_SPAN_EXT_CONTROL)/4]=0x80000000;  //lower word
@@ -70,14 +76,14 @@ __kernel void trojan(	global volatile unsigned int * restrict timings,
 		mem_fence(CLK_GLOBAL_MEM_FENCE);
 		test[(offset+ADDR_SPAN_EXT_CONTROL)/4]=0x00000000;  //lower word
 		test[(offset+ADDR_SPAN_EXT_CONTROL)/4+1]=0x00000000;// upeer word
-		index=index+1;
 		timings[2*index]=start;
 		timings[2*index+1]=stop;
+		index=index+1;
 		
 		//if(readvalue==0x12345678) break;
 		mem_fence(CLK_GLOBAL_MEM_FENCE);
 		//if  you take this line out readvalue related lines will be optimized out
-		timings[131072]=readvalue;
+		test[3]=readvalue;
 		//timings[2*(adr >> 12)+1]=readvalue;
 	}
 	//writing 0x180000000 to address span extender should set the base address to ACP 

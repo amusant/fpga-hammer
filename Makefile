@@ -17,7 +17,7 @@ compile:cl_compile
 sim:
 	#module load s5_ref altera/15.1
 	LD_LIBRARY_PATH=/opt/altera/14.1/hld/board/s5_ref/linux64/lib:/opt/altera/14.1/hld/host/linux64/lib:./trojan \
-	CL_CONTEXT_EMULATOR_DEVICE_ALTERA=1 ./${KERNEL}.EXE 120
+	CL_CONTEXT_EMULATOR_DEVICE_ALTERA=1 ./${KERNEL}.EXE  0 268435456 0
 	#module unload s5_ref altera/15.1
 
 

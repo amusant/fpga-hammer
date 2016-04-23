@@ -9,7 +9,7 @@
 #include <thread>
 #include <chrono>
 #define EXCEP_VECTOR_TABLE 0xFFFF0000
-#define SLEEPTIME_FOR_STP 30
+#define SLEEPTIME_FOR_STP 0
 using namespace std;
 unsigned int *input = NULL;
 unsigned int *timings = NULL;
@@ -22,7 +22,7 @@ int i,j=0;
   	timer =   (unsigned int *)alignedMalloc(sizeof(unsigned int) * 10);
 	timer[8]=0xABABABAB;
 	cout << "start sleep" << endl;
-	cout << (unsigned int)&timings[0] << endl;
+	cout << (unsigned long int)&timings[0] << endl;
 	cout << (unsigned long int)&timer[0] << endl;
 	cout << 0-(unsigned long int)&timer[0] << endl;
 	std::this_thread::sleep_for (std::chrono::seconds(SLEEPTIME_FOR_STP));
@@ -79,7 +79,7 @@ int i,j=0;
 	}
 	}
 	if(of) of.write((char *)(timings),2*4*(TOTAL_MEM/PAGE_SIZE));
-	printf("test: %x, low %d, high %d\n",(int)timings[131072],(int)timings[131073],timings[131074]);
+	printf("test: %x, low %d, high %d\n",(int)timer[0],(int)timer[1],timer[2]);
 	
 	//for(i=0;i<TOTAL_MEM/(2*PAGE_SIZE);i++) printf("PAGE=0x%x, time=%d\n",i,(timings[2*i+2]-timings[2*i])/10);
 	//std::this_thread::sleep_for (std::chrono::seconds(1));

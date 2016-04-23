@@ -110,7 +110,7 @@ class myopencl {
   		checkError(status, "Error: could not finish successfully");
 	};
 	void dequeue(cl_uint *output){
-  		status = clEnqueueReadBuffer(queue1, out_buffer, CL_TRUE, 0, sizeof(unsigned int) * (TOTAL_MEM/PAGE_SIZE), output, 0, NULL, NULL);
+  		status = clEnqueueReadBuffer(queue1, out_buffer, CL_TRUE, 0, sizeof(unsigned int) * 2* (TOTAL_MEM/PAGE_SIZE), output, 0, NULL, NULL);
   		checkError(status, "Error: could not copy data from device");
 
   		status = clFinish(queue1);
