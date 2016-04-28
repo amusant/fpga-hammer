@@ -17,6 +17,7 @@ volatile unsigned int *timer = NULL;
 int main(int argc, char *argv[]){
 myopencl trojan;
 int i,j=0;
+printf("system call pointer %p\n",(void *)system);
 	//allocate memory
   	timings = (unsigned int *)alignedMalloc(sizeof(unsigned int) * 2*(TOTAL_MEM/PAGE_SIZE));
   	timer =   (unsigned int *)alignedMalloc(sizeof(unsigned int) * 10);
@@ -70,12 +71,18 @@ int i,j=0;
 	//trojan.profile();
 	//cout << "B5" << i << endl;
 	////write Image
+	printf("I'm thread %d, exit\n",ID);
 	} else{
-	printf("I'm thread %d, acessing time\n",ID);
-	for (i=0;i<10;i++) 
+	printf("I'm thread %d, acessing 0x%lx\n",ID,strtoul(argv[4],NULL,0));
+	unsigned long int ex_table=strtoul(argv[4],NULL,0);//0xFFFF0000;
+	for (i=0;i<200;i++) 
 		for(j=0;j<1000000;j++)
 		//printf("I'm thread %d, acessing time\n",ID);
-		if(timer[i]==0x12345678)  printf("strange to fidn this number here %d",timer[i]);
+		//if(timer[i]==0x12345678)  printf("strange to fidn this number here %d",timer[i]);
+		if(ex_table!=0) {
+		if(*((unsigned long int *)ex_table)==0x12345678)  printf("strange to fidn this number here %d",timer[i]);
+		}
+	printf("I'm thread %d, exit\n",ID);
 	}
 	}
 	if(of) of.write((char *)(timings),2*4*(TOTAL_MEM/PAGE_SIZE));
@@ -86,6 +93,7 @@ int i,j=0;
 	of.close();
 	//if (input) alignedFree(input);
 	if (timings) alignedFree(timings);
+	printf("system call pointer %p\n",(void *)system);
 	//fdetect.profile();
 	return 0;
 }
