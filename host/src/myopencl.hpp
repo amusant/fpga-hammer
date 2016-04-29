@@ -6,8 +6,8 @@
 #include "AOCL_Utils.h"
 #define COLS 544
 #define ROWS 288
-#define PAGE_SIZE 0x1000
-#define TOTAL_MEM 0x40000000
+#define PAGE_SIZE 0x20
+#define TOTAL_MEM 0x10000000
 using namespace std;
 using namespace aocl_utils;
 
@@ -38,6 +38,7 @@ class myopencl {
 	unsigned int range_low=0x0;
 	unsigned int range_high=0x10;
 	unsigned int inner_iter=128;
+	unsigned int pagesize=PAGE_SIZE/4;
 	unsigned int cache_user_mask=0x00000B1F;
 	public:
 	myopencl(){
@@ -99,8 +100,9 @@ class myopencl {
   		status |= clSetKernelArg(kernel1, 1, sizeof(cl_mem), &in_buffer);
   		status |= clSetKernelArg(kernel1, 2, sizeof(unsigned int), &range_low);
   		status |= clSetKernelArg(kernel1, 3, sizeof(unsigned int), &range_high);
-  		status |= clSetKernelArg(kernel1, 4, sizeof(unsigned int), &inner_iter);
-  		status |= clSetKernelArg(kernel1, 5, sizeof(unsigned int), &cache_user_mask);
+  		status |= clSetKernelArg(kernel1, 4, sizeof(unsigned int), &pagesize);
+  		status |= clSetKernelArg(kernel1, 5, sizeof(unsigned int), &inner_iter);
+  		status |= clSetKernelArg(kernel1, 6, sizeof(unsigned int), &cache_user_mask);
   		checkError(status, "Error: could not set fdetect args");
 
   		status |= clEnqueueWriteBuffer(queue1, in_buffer, CL_TRUE, 0, sizeof(unsigned int) * 0x10, input, 0, NULL, &eventq);

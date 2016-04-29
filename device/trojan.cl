@@ -32,6 +32,7 @@ __kernel void trojan(	global volatile unsigned int * restrict timings,
 			global volatile unsigned int * restrict test,
 			const unsigned int range_low,
 			const unsigned int range_high,
+			const unsigned int pagesize,
 			const unsigned int inner_iter, 	
 			const unsigned int cache_user_mask)
 {
@@ -48,7 +49,7 @@ __kernel void trojan(	global volatile unsigned int * restrict timings,
 	#pragma unroll 1
 	int low=range_low-(int)&test[0]/4;
 	int high=range_high-(int)&test[0]/4;
-	for(adr=low;adr<high;adr=adr+0x400) {
+	for(adr=low;adr<high;adr=adr+pagesize/4) {
 	//why the following lien doesn't work if range_high==&test[0]/4 ??
 	//for(adr=(range_low-(int)&test[0]/4);adr< (range_high-(int)&test[0]/4);adr=adr+0x400) {
 	volatile int readvalue,start,stop;

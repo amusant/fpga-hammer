@@ -1,0 +1,27 @@
+%-------------------------------------------------------------------------------
+% Filename: driver.tex
+% Description: This file converts "temp.pstex_t" into "driver.dvi"
+% Author: Sylvain GUILLEY: (sylvain.guilley@enst.fr)
+%-------------------------------------------------------------------------------
+
+\documentclass{article}
+\usepackage[dvips]{graphicx}
+\usepackage[dvips]{color}
+%\usepackage{rotating}
+\usepackage{amsmath,amsfonts}
+\usepackage{epsfig}
+\usepackage{color} % (note: you might not might not need to do this)
+\setlength{\textwidth}{100cm}
+\setlength{\textheight}{100cm}
+\begin{document}
+\pagestyle{empty}
+
+% PS figure:
+%\begin{picture}(0,0)%
+%\includegraphics{temp.pstex}%
+%\end{picture}%
+
+% LaTeX picture:
+\input{temp.pstex_t}
+
+\end{document}
