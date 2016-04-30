@@ -7,7 +7,7 @@
 #define COLS 544
 #define ROWS 288
 #define PAGE_SIZE 0x20
-#define TOTAL_MEM 0x10000000
+#define TOTAL_MEM 0x20000000
 using namespace std;
 using namespace aocl_utils;
 
@@ -38,7 +38,7 @@ class myopencl {
 	unsigned int range_low=0x0;
 	unsigned int range_high=0x10;
 	unsigned int inner_iter=128;
-	unsigned int pagesize=PAGE_SIZE/4;
+	unsigned int pagesize=PAGE_SIZE;
 	unsigned int cache_user_mask=0x00000B1F;
 	public:
 	myopencl(){
@@ -80,7 +80,7 @@ class myopencl {
   		in_buffer = clCreateBuffer(context, CL_MEM_READ_ONLY, sizeof(unsigned int) * 0x10, NULL, &status);
   		checkError(status, "Error: could not create device buffer");
 
-  		out_buffer = clCreateBuffer(context, CL_MEM_WRITE_ONLY, sizeof(unsigned int) * 2*(TOTAL_MEM/PAGE_SIZE), NULL, &status);
+  		out_buffer = clCreateBuffer(context, CL_MEM_WRITE_ONLY, sizeof(unsigned short) * 2*(TOTAL_MEM/PAGE_SIZE), NULL, &status);
   		checkError(status, "Error: could not create output buffer");
 
   		//status |= clSetKernelArg(kernel1, 2, sizeof(unsigned long), &addr_span_ext_control);
@@ -111,8 +111,8 @@ class myopencl {
   		status = clFinish(queue1);
   		checkError(status, "Error: could not finish successfully");
 	};
-	void dequeue(cl_uint *output){
-  		status = clEnqueueReadBuffer(queue1, out_buffer, CL_TRUE, 0, sizeof(unsigned int) * 2* (TOTAL_MEM/PAGE_SIZE), output, 0, NULL, NULL);
+	void dequeue(cl_ushort *output){
+  		status = clEnqueueReadBuffer(queue1, out_buffer, CL_TRUE, 0, sizeof(unsigned short) * 2* (TOTAL_MEM/PAGE_SIZE), output, 0, NULL, NULL);
   		checkError(status, "Error: could not copy data from device");
 
   		status = clFinish(queue1);

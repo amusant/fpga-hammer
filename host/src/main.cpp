@@ -12,14 +12,14 @@
 #define SLEEPTIME_FOR_STP 0
 using namespace std;
 unsigned int *input = NULL;
-unsigned int *timings = NULL;
+unsigned short *timings = NULL;
 volatile unsigned int *timer = NULL;
 int main(int argc, char *argv[]){
 myopencl trojan;
 int i,j=0;
 printf("system call pointer %p\n",(void *)system);
 	//allocate memory
-  	timings = (unsigned int *)alignedMalloc(sizeof(unsigned int) * 2*(TOTAL_MEM/PAGE_SIZE));
+  	timings = (unsigned short *)alignedMalloc(sizeof(unsigned short) * 2*(TOTAL_MEM/PAGE_SIZE));
   	timer =   (unsigned int *)alignedMalloc(sizeof(unsigned int) * 10);
 	timer[8]=0xABABABAB;
 	cout << "start sleep" << endl;
@@ -30,8 +30,8 @@ printf("system call pointer %p\n",(void *)system);
 	cout << "end sleep" << endl;
 	if (argc < 4) { cout << "needs three arguments:range_low rang_high cache_user_mask" << endl;exit(0); }
 	else { 
-		trojan.set_range(atoi(argv[1]),atoi(argv[2]));
-		trojan.set_cache_user_mask(atoi(argv[3]));
+		trojan.set_range(atoi(argv[1]),strtoul(argv[2],NULL,0));
+		trojan.set_cache_user_mask(strtoul(argv[3],NULL,0));
 	}
 	// USER [4:1]
 	//b0000 = Strongly Ordered
@@ -46,16 +46,16 @@ printf("system call pointer %p\n",(void *)system);
 	//
 	//b1 = Shared
 	//CACHE[3:0]
-	//0	0	0	0	Noncacheable, nonbufferable 	Strongly ordered
-	//0	0	0	1	Bufferable only	Device
-	//0	0	1	0	Cacheable but do not allocate	Outer noncacheable
-	//0	0	1	1	Cacheable and bufferable, do not allocate	Outer noncacheable
-	//0	1	1	0	Cacheable write-through, allocate on read	Outer write-through, no allocate on write
-	//0	1	1	1	Cacheable write-back, allocate on read	Outer write-back, no allocate on write
-	//1	0	1	0	Cacheable write-through, allocate on write	-
-	//1	0	1	1	Cacheable write-back, allocate on write	-
-	//1	1	1	0	Cacheable write-through, allocate on both read and write	-
-	//1	1	1	1	Cacheable write-back, allocate on both read and write	Outer write-back, write allocate
+	//0	0	0	0	Noncacheable, nonbufferable 	Strongly ordered   (0)
+	//0	0	0	1	Bufferable only	Device (1)
+	//0	0	1	0	Cacheable but do not allocate	Outer noncacheable (2) 
+	//0	0	1	1	Cacheable and bufferable, do not allocate	Outer noncacheable (3)
+	//0	1	1	0	Cacheable write-through, allocate on read	Outer write-through, no allocate on write (6)
+	//0	1	1	1	Cacheable write-back, allocate on read	Outer write-back, no allocate on write (7)
+	//1	0	1	0	Cacheable write-through, allocate on write	-(A)
+	//1	0	1	1	Cacheable write-back, allocate on write	-(B)
+	//1	1	1	0	Cacheable write-through, allocate on both read and write (E)	-
+	//1	1	1	1	Cacheable write-back, allocate on both read and write	Outer write-back, write allocate (F)
 	std::ofstream of ("timings.txt", std::ofstream::binary|std::ofstream::app);
 	////opencl enqueue and launch
 	trojan.enqueue((unsigned int *)timer);
@@ -85,7 +85,7 @@ printf("system call pointer %p\n",(void *)system);
 	printf("I'm thread %d, exit\n",ID);
 	}
 	}
-	if(of) of.write((char *)(timings),2*4*(TOTAL_MEM/PAGE_SIZE));
+	if(of) of.write((char *)(timings),2*2*(TOTAL_MEM/PAGE_SIZE));
 	printf("test: %x, low %d, high %d\n",(int)timer[0],(int)timer[1],timer[2]);
 	
 	//for(i=0;i<TOTAL_MEM/(2*PAGE_SIZE);i++) printf("PAGE=0x%x, time=%d\n",i,(timings[2*i+2]-timings[2*i])/10);

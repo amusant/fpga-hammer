@@ -28,7 +28,7 @@ void switch_addr_space(global unsigned int *test,int window){
 }
 
 
-__kernel void trojan(	global volatile unsigned int * restrict timings,
+__kernel void trojan(	global volatile unsigned short * restrict timings, //timings will never go past 16 bits
 			global volatile unsigned int * restrict test,
 			const unsigned int range_low,
 			const unsigned int range_high,
@@ -41,7 +41,7 @@ __kernel void trojan(	global volatile unsigned int * restrict timings,
 	offset=0x40000000-(int)test;
 	//offset=0;
 	test[(offset+0x20)/4+2]=0x0; //initialize
-	index=(range_low/0x400);
+	index=(range_low/(pagesize/2)); //timings is a short array i.e 2 bytes
 		test[0]=(int)&test[0];
 		test[1]=range_low-(int)&test[0]/4;
 		test[2]=range_high-(int)&test[0]/4;
