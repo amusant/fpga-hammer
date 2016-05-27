@@ -9,7 +9,7 @@
 #include <thread>
 #include <chrono>
 #define EXCEP_VECTOR_TABLE 0xFFFF0000
-#define SLEEPTIME_FOR_STP 0
+#define SLEEPTIME_FOR_STP 30
 using namespace std;
 unsigned int *input = NULL;
 unsigned short *timings = NULL;
@@ -30,7 +30,7 @@ printf("system call pointer %p\n",(void *)system);
 	cout << "end sleep" << endl;
 	if (argc < 4) { cout << "needs three arguments:range_low rang_high cache_user_mask" << endl;exit(0); }
 	else { 
-		trojan.set_range(atoi(argv[1]),strtoul(argv[2],NULL,0));
+		trojan.set_range(strtoul(argv[1],NULL,0),strtoul(argv[2],NULL,0));
 		trojan.set_cache_user_mask(strtoul(argv[3],NULL,0));
 	}
 	// USER [4:1]

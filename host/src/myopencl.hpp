@@ -6,8 +6,8 @@
 #include "AOCL_Utils.h"
 #define COLS 544
 #define ROWS 288
-#define PAGE_SIZE 0x20
-#define TOTAL_MEM 0x20000000
+#define PAGE_SIZE 0x400
+#define TOTAL_MEM 0x2000000
 using namespace std;
 using namespace aocl_utils;
 
@@ -37,7 +37,7 @@ class myopencl {
 	unsigned long addr_span_ext_control=(unsigned  long)&thresh;
 	unsigned int range_low=0x0;
 	unsigned int range_high=0x10;
-	unsigned int inner_iter=128;
+	unsigned int inner_iter=213333;
 	unsigned int pagesize=PAGE_SIZE;
 	unsigned int cache_user_mask=0x00000B1F;
 	public:
