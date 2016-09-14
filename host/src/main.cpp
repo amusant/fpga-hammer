@@ -16,7 +16,7 @@ unsigned short *timings = NULL;
 volatile unsigned int *timer = NULL;
 int main(int argc, char *argv[]){
 myopencl trojan;
-int i,j=0;
+//int i,j=0;
 printf("system call pointer %p\n",(void *)system);
 	//allocate memory
   	timings = (unsigned short *)alignedMalloc(sizeof(unsigned short) * 2*(TOTAL_MEM/PAGE_SIZE));
@@ -74,14 +74,15 @@ printf("system call pointer %p\n",(void *)system);
 	printf("I'm thread %d, exit\n",ID);
 	} else{
 	printf("I'm thread %d, acessing 0x%lx\n",ID,strtoul(argv[4],NULL,0));
-	unsigned long int ex_table=strtoul(argv[4],NULL,0);//0xFFFF0000;
+	//lock down not needed for rowhammer
+	/*unsigned long int ex_table=strtoul(argv[4],NULL,0);//0xFFFF0000;
 	for (i=0;i<200;i++) 
 		for(j=0;j<1000000;j++)
 		//printf("I'm thread %d, acessing time\n",ID);
 		//if(timer[i]==0x12345678)  printf("strange to fidn this number here %d",timer[i]);
 		if(ex_table!=0) {
 		if(*((unsigned long int *)ex_table)==0x12345678)  printf("strange to fidn this number here %d",timer[i]);
-		}
+		}*/
 	printf("I'm thread %d, exit\n",ID);
 	}
 	}
