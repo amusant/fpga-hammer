@@ -87,7 +87,7 @@ printf("system call pointer %p\n",(void *)system);
 	}
 	}
 	if(of) of.write((char *)(timings),2*2*(TOTAL_MEM/PAGE_SIZE));
-	printf("test: %x, low %d, high %d\n",(int)timer[0],(int)timer[1],timer[2]);
+	printf("test: %x, low %d, high %d, valueread %x\n",(int)timer[0],(int)timer[1],timer[2],timer[3]);
 	
 	//for(i=0;i<TOTAL_MEM/(2*PAGE_SIZE);i++) printf("PAGE=0x%x, time=%d\n",i,(timings[2*i+2]-timings[2*i])/10);
 	//std::this_thread::sleep_for (std::chrono::seconds(1));
