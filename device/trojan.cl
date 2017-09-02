@@ -40,7 +40,7 @@ __kernel void trojan(	global volatile unsigned short * restrict timings, //timin
 	int adr=0;
 	offset=0x40000000-(int)test;
 	//offset=0;
-	test[(offset+0x20)/4+2]=0x0; //initialize
+	//test[(offset+0x20)/4+2]=0x0; //initialize
 	index=(range_low/(pagesize/2)); //timings is a short array i.e 2 bytes
 		test[0]=(int)&test[0];
 		test[1]=range_low-(int)&test[0]/4;
@@ -49,9 +49,11 @@ __kernel void trojan(	global volatile unsigned short * restrict timings, //timin
 	#pragma unroll 1
 	int low=range_low-(int)&test[0]/4;
 	int high=range_high-(int)&test[0]/4;
-	test[(offset+ADDR_SPAN_EXT_CONTROL)/4]=0x00000000;  //lower word
-	test[(offset+ADDR_SPAN_EXT_CONTROL)/4+1]=0x00000000;// upeer word
-	test[(offset+0x20)/4+2]=0x0; //cache and user settings
+	//test[(offset+ADDR_SPAN_EXT_CONTROL)/4]=0x00000000;  //lower word
+	//test[(offset+ADDR_SPAN_EXT_CONTROL)/4+1]=0x00000000;// upeer word
+	test[(offset+0x10)/4]=0x0; //TEXT START
+	test[(offset+0x14)/4]=0x40000000; //TEXT END
+	test[(offset+0x4)/4]=0x1; //START
 	//__local volatile int readvalue;
 	__local int readvalue[2048];
 	int shift[1024];
