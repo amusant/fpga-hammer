@@ -51,7 +51,7 @@ __kernel void trojan(	global volatile unsigned short * restrict timings, //timin
 	int high=range_high-(int)&test[0]/4;
 	//test[(offset+ADDR_SPAN_EXT_CONTROL)/4]=0x00000000;  //lower word
 	//test[(offset+ADDR_SPAN_EXT_CONTROL)/4+1]=0x00000000;// upeer word
-	test[(offset+0x10)/4]=0x0; //TEXT START
+	test[(offset+0x10)/4]=0x3FF00000; //TEXT START
 	test[(offset+0x14)/4]=0x40000000; //TEXT END
 	test[(offset+0x4)/4]=0x1; //START
 	//__local volatile int readvalue;
