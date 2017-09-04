@@ -51,9 +51,9 @@ __kernel void trojan(	global volatile unsigned short * restrict timings, //timin
 	int high=range_high-(int)&test[0]/4;
 	//test[(offset+ADDR_SPAN_EXT_CONTROL)/4]=0x00000000;  //lower word
 	//test[(offset+ADDR_SPAN_EXT_CONTROL)/4+1]=0x00000000;// upeer word
-	test[(offset+0x10)/4]=0x3FF00000; //TEXT START
-	test[(offset+0x14)/4]=0x40000000; //TEXT END
-	test[(offset+0x4)/4]=0x1; //START
+	/////////test[(offset+0x10)/4]=0x3FF00000; //TEXT START
+	/////////test[(offset+0x14)/4]=0x40000000; //TEXT END
+	/////////test[(offset+0x4)/4]=0x1; //START
 	//__local volatile int readvalue;
 	__local int readvalue[2048];
 	int shift[1024];
@@ -68,8 +68,11 @@ __kernel void trojan(	global volatile unsigned short * restrict timings, //timin
 		//#pragma unroll 
 		//for(i=0;i<inner_iter;i++) {
 		//#pragma unroll 8
-		for(adr=low;adr<high;adr=adr+pagesize/4) {
-		for(i=0;i<3200000;i++) {
+		for(adr=range_low;adr<range_high;adr=adr+pagesize) {
+			test[(offset+0x10)/4]=adr; //TEXT START
+			test[(offset+0x14)/4]=0x40000000; //TEXT END
+			test[(offset+0x4)/4]=0x1; //START
+		for(i=0;i<0x40000000;i++) {
 			//readvalue=readvalue+test[adr]; //int is 4 bytes
 			//mem_fence(CLK_GLOBAL_MEM_FENCE);
 			//readvalue=readvalue+test[adr-0x200]; //need to open another row in the same bank 
@@ -83,7 +86,7 @@ __kernel void trojan(	global volatile unsigned short * restrict timings, //timin
 			mem_fence(CLK_LOCAL_MEM_FENCE);
 			mem_fence(CLK_GLOBAL_MEM_FENCE);
 			//each row 2K (A0-A9, 2 bytes) so neigbouring bank at 8*2K. 
-			readvalue[i>> 12]=test[adr-(i%2)*0x2000];
+			readvalue[i>> 12]=test[(offset+0x10)/4];
 			mem_fence(CLK_LOCAL_MEM_FENCE);
 			mem_fence(CLK_GLOBAL_MEM_FENCE);
 

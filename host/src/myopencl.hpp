@@ -6,7 +6,7 @@
 #include "AOCL_Utils.h"
 #define COLS 544
 #define ROWS 288
-#define PAGE_SIZE 0x400
+#define PAGE_SIZE 0x800 //2K
 #define TOTAL_MEM 0x2000000
 using namespace std;
 using namespace aocl_utils;
