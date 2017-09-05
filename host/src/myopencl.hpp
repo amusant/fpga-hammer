@@ -94,6 +94,10 @@ class myopencl {
 	void set_cache_user_mask(unsigned int mask){
 		cache_user_mask=mask;
 	}
+	void set_inner_iter(unsigned int iter){
+        inner_iter=iter;
+    }
+
 		
 	void enqueue(cl_uint *input){
   		status  = clSetKernelArg(kernel1, 0, sizeof(cl_mem), &out_buffer);

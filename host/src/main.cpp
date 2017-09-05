@@ -9,7 +9,7 @@
 #include <thread>
 #include <chrono>
 #define EXCEP_VECTOR_TABLE 0xFFFF0000
-#define SLEEPTIME_FOR_STP 0
+#define SLEEPTIME_FOR_STP 30
 using namespace std;
 unsigned int *input = NULL;
 unsigned short *timings = NULL;
@@ -32,6 +32,7 @@ printf("system call pointer %p\n",(void *)system);
 	else { 
 		trojan.set_range(strtoul(argv[1],NULL,0),strtoul(argv[2],NULL,0));
 		trojan.set_cache_user_mask(strtoul(argv[3],NULL,0));
+		trojan.set_inner_iter(strtoul(argv[4],NULL,0));
 	}
 	// USER [4:1]
 	//b0000 = Strongly Ordered
@@ -67,7 +68,7 @@ printf("system call pointer %p\n",(void *)system);
 	trojan.launch();
 	std::this_thread::sleep_for (std::chrono::seconds(1));
 	trojan.dequeue(timings);
-	//cout << "B4" << i << endl;
+	cout << "AI:" <<  timings[0] << endl;
 	//trojan.profile();
 	//cout << "B5" << i << endl;
 	////write Image
