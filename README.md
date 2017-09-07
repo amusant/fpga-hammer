@@ -25,4 +25,5 @@ Random:  random strings of 0s and 1s.
 
 As noted by the rowhammer paper(~smith) teh Rowstripe pattern gives the maximum number of 
 errors. We vary the refresh Interval from 32ms to 128ms. The refresh interval in DDR3 standard is 
-64ms.
+64ms. The activation interval, i.e the time between two hammers is ~50 ns on average. This is the 
+minimum due to DDR3 row cycle time constraint.
