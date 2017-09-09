@@ -23,7 +23,10 @@ is organised as two 256M x 16 chips with a total memory size of 1GB. The page si
 and the hammering addresses are calculated acocrdingly. We tried threee different patterns
 
 RowStripe: Alternate rows of zero and one
+
+
 Chekered: 0s and 1s organised as in chessboard.
+
 Random:  random strings of 0s and 1s.
 
 As noted by the rowhammer paper(~smith) teh Rowstripe pattern gives the maximum number of 
