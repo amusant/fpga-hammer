@@ -6,7 +6,7 @@ chips (~40nm). We use a popular SoCFPGA platform (DE1SoC). The SDRAM DDR3 memory
 on board is hammered from the FPGA. There is a configurable hardware block programmed 
 in FPGA capable of hamering the SDRAM. The following parameters can be configured
 
-# Address Range
+  # Address Range
 # Refresh Interval
 # Activation Interval.
 # Data Pattern(RowStripe, Chekered adn Random).
