@@ -9,7 +9,7 @@
 #include <thread>
 #include <chrono>
 #define EXCEP_VECTOR_TABLE 0xFFFF0000
-#define SLEEPTIME_FOR_STP 0
+#define SLEEPTIME_FOR_STP 30
 using namespace std;
 unsigned int *input = NULL;
 unsigned short *timings = NULL;

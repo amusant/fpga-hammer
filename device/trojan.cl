@@ -88,7 +88,7 @@ __kernel void trojan(	global volatile unsigned short * restrict timings, //timin
 			mem_fence(CLK_GLOBAL_MEM_FENCE);
 			//each row 2K (A0-A9, 2 bytes) so neigbouring bank at 8*2K. 
 			readvalue[3]=test[(offset+0x18)/4];
-			if(test[(offset+0x18)/4]> 12800000) break;
+			if(test[(offset+0x18)/4]> 25600000) break;
 			mem_fence(CLK_LOCAL_MEM_FENCE);
 			mem_fence(CLK_GLOBAL_MEM_FENCE);
 

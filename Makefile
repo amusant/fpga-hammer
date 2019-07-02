@@ -1,5 +1,3 @@
-#g++ -I/comelec/softs/opt/altera/altera14.1/hld/host/include -I/home/chaudhur/DE1SOC_OPENCL/examples/common/inc /home/chaudhur/DE1SOC_OPENCL/examples/common/src/AOCL_Utils.cpp myopencl.hpp main.cpp `aocl link-config` -L./ -lkernel
-#LD_LIBRARY_PATH=/opt/altera/14.1/hld/board/s5_ref/linux64/lib:/opt/altera/14.1/hld/host/linux64/lib:./fdetect
 DE1SOC_BOARD_PACKAGE=./DE1SOC_OPENCL/
 KERNEL=trojan
 #CROSS_COMPILE=arm-linux-gnueabihf-

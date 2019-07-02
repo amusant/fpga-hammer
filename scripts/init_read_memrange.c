@@ -57,14 +57,27 @@ int main(int argc, char *argv[]){
 int i;
 off_t target_start=strtoul(argv[1],NULL,0);
 int target_end=strtoul(argv[2],NULL,0);
+int pattern=strtoul(argv[3],NULL,0);
 printf("%x:%x\n",target_start, target_end);
 unsigned int memsize=(target_end-target_start) >> 2;
 unsigned int *memimage=malloc(sizeof(unsigned int)*memsize);
+srand(time(NULL));
 for (i=0; i< (target_end-target_start);i=i+4) {
-	unsigned int oddrow=(i/0x4000) % 2;
-	if (oddrow) write_mem(target_start+i,0xFFFFFFFF);
-	else write_mem(target_start+i,0x00000000);
-	memimage[i/4]=read_mem(target_start+i);
+	if(pattern==0) { //rowstripe
+		unsigned int oddrow=(i/0x8000) % 2;
+		if (oddrow) write_mem(target_start+i,0xFFFFFFFF);
+		else write_mem(target_start+i,0x00000000);
+		memimage[i/4]=read_mem(target_start+i); 
+	} else if (pattern==1) { //checkered
+		unsigned int oddrow=(i/0x8000) % 2;
+		if (oddrow) write_mem(target_start+i,0xAAAAAAAA);
+		else write_mem(target_start+i,0x55555555);
+		memimage[i/4]=read_mem(target_start+i);
+	} else if (pattern==2) { //random 
+		int val=rand();
+		write_mem(target_start+i,val);
+		memimage[i/4]=read_mem(target_start+i);
+	}
 }
 //memcpy(memimage,target_start,128*1024*1024);
 
