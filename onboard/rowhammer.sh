@@ -14,8 +14,8 @@ devmem2 0xFFC25000 w 0xA1042
 mv memimage.txt memimage.txt.after
 devmem2 0xFFC25008 w 0x8CCCC30
 #diff memimage.txt.after memimage.txt.before
-xxd -c 4 -b memimage.txt.before > del1
-xxd -c 4 -b memimage.txt.after >  del2
+xxd -c 1 -b memimage.txt.before > del1
+xxd -c 1 -b memimage.txt.after >  del2
 echo "Errors: "
 diff del1 del2 > $5.$3.diff
 n=`diff del1 del2 | wc -l`

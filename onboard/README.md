@@ -21,17 +21,20 @@
 
 # I have only tested for altera 14.1, you can find the sdcard image here
 
+	https://www.dropbox.com/s/xepcgjl1uqpf19f/de1soc.img.tar.gz?dl=0
+
 	- boot with the sdcard in DE1SoC board.
+	- MSEL setting should be 01010
 
 
 # copy/clone the onboard directory in DE1SOC
 	- run  ./compile.sh to compile the host executable trojan.EXE
 	- copy trojan.aocx to onboard directory
-	- run make to start teh experiments
+	- run make to start the experiments
 
 
 # note 
-	- calls rowhammer.py 
+	- make calls rowhammer.py 
 	- inside rowhammer.py you can set Activation Interval, Refresh Interval and address range.
     - 512MB of memory is reserved away from the linux kernel on which we do rowhammer experiments.
 		- this to avoid rowhammering a working linux memory which will result in freeze.
@@ -40,3 +43,14 @@
 		AI:   Activation interval fixed. 45 ns
 		RI:   Refresh interval in miliseconds, 
 		Pattern: 
+
+	The rowhammer.py calls rowhammer.sh which call the script run.
+
+
+	The script rowhammer.sh does the following:
+	
+	1. initialize the memory zone with a pattern.
+	2. read the memory zone and save a copy
+	3. run rowhammer 
+	4. read back the smae memory zone.
+	5. show and log the differences.

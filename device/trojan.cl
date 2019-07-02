@@ -1,5 +1,5 @@
 #//--/* AUTHOR:SUMANTA CHAUHDURI */
-#include "../host/inc/defines.h"
+#include "../onboard/host/inc/defines.h"
 #define DDR_WINDOW_BASE 0x00000000
 #define TIMER  0x20
 #define ACP_BASE 0x80000000

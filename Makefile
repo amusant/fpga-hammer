@@ -24,7 +24,8 @@ hw:
 	#module load de1soc altera/14.1
 	#aoc --profile -g --board de1soc_sharedonly -cl-opt-disable  device/trojan.cl
 	./hwcompile.sh
-	cp ${KERNEL}.EXE ${KERNEL}.aocx bkup/lastbuild
+	cp  ${KERNEL}.aocx bkup/lastbuild
+	cp ${KERNEL}.aocx onboard
 	
 	
 show:
