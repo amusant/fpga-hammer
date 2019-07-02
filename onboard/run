@@ -1,0 +1,26 @@
+#!/bin/bash -f
+#if ! [ -e /mnt/opencl.rbf ] 
+#then mount /dev/mmcblk0p1 /mnt 
+#fi
+source /root/init_opencl.sh
+aocl diagnostic
+rm -rf timings.bin
+#gdb -ex run --args ./trojan.EXE $1 $2 $3 $4 $5
+./trojan.EXE $1 $2 $3 $4 $5 
+id=$!
+echo $id
+#sleep 30
+#insmod print_pgtable.ko pid_mem=$id
+#cat /proc/mypgtable > pgtables$3.txt
+#cp /proc/$id/smaps ./smaps$3.txt
+#cp /proc/$id/pagemap ./pagemap$3.txt
+#rmmod print_pgtable
+#wait $id
+#mv timings.bin timings$3.bin
+#zip -g timings.zip timings$3.bin
+#rm timings$3.bin
+rmmod aclsoc_drv
+dd if=./opencl.rbf of=/dev/fpga0 bs=1M
+
+
+
