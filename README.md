@@ -1,3 +1,5 @@
+For running the experiments follow instructions in onboard/README.md
+
 # fpga-hammer
 An OpenCL program to rowhammer Linux from the FPGA side.
 
