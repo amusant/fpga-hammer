@@ -35,3 +35,8 @@
 	- inside rowhammer.py you can set Activation Interval, Refresh Interval and address range.
     - 512MB of memory is reserved away from the linux kernel on which we do rowhammer experiments.
 		- this to avoid rowhammering a working linux memory which will result in freeze.
+	- modify launch_a_test function in rowhammer.py
+		ADDR: The start address. We will rowhammer a zone of 1MB starting from this address.
+		AI:   Activation interval fixed. 45 ns
+		RI:   Refresh interval in miliseconds, 
+		Pattern: 
