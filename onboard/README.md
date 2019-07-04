@@ -27,6 +27,28 @@
 	- MSEL setting should be 01010
 
 
+
+# use with signaltap and single exp.
+	- copy/clone the onboard directory in DE1SOC
+	- check " #define SLEEPTIME_FOR_STP 30 " in lien 12 in host/src/main.cpp
+		- it means the program will wait 30 seconds for you to setup signaltap
+	- run  ./compile.sh to compile the host executable trojan.EXE
+	- run make test to see if it finishes without err.
+		-it will generate 
+			memimage.txt.before : mem values 1MB before rowhammer
+			memimage.txt.after  : mem values 1MB after rowhammer
+			test.0x2de.diff     : diff of the above to files
+			test.result         : count of errors
+	- launch signaltap
+		- quartus trojan/trojan.stp
+		- assure the 5CSEMA device is chosen in the device pane.
+	- launch make test, after it prints "start sleep" go to signaltap
+	  window, start acquisition (autorun)
+	- you should see signals VALID READY toggling.
+	- the difference between each pulse of A4LMPORT_ARREADY  is the 
+	  activation interval.
+		
+
 # copy/clone the onboard directory in DE1SOC
 	- run  ./compile.sh to compile the host executable trojan.EXE
 	- copy trojan.aocx to onboard directory
