@@ -76,3 +76,29 @@
 	3. run rowhammer 
 	4. read back the smae memory zone.
 	5. show and log the differences.
+
+
+# To Upgrade to a newer version:
+	- First open the DE1SOC_OPENCL/de1soc_sharedonly/system.qsys with latest version( say 18.1)  
+      of qsys-edit:
+		$ qsys-edit DE1SOC_OPENCL/de1soc_sharedonly/system.qsys
+	
+	- generate the hdl from generate menu.
+
+	- exit and open DE1SOC_OPENCL/de1soc_sharedonly/top.qpf  with quartus 18.1
+		$ quartus DE1SOC_OPENCL/de1soc_sharedonly/top.qpf
+
+	- It should automatically upgrade IPs and/or give warnings errors. 
+	- Compile just to check the that it finishes without error.
+    - Now it can be use to compile opencl programs by setting
+		$ export AOCL_BOARD_PACKAGE_ROOT=`pwd`/DE1SOC_OPENCL
+
+	- for DE1-SoC terasic provides linux sd card images with driver, runtime library 
+      for versions 14.1 and 16.1
+
+	- for later versions  you can  find  a busybox linux image here
+		....altera18.1/hld/board/c5soc/linux_sd_card_image.tgz
+	- this should work (not tested) but busybox is limited (no python , difficult to install packages)
+	- you can also try copying the kernel (zImage) and drivers/librarires to the Terasic 
+	  provided sd card (ubuntu).
+
